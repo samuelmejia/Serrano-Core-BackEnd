@@ -1,11 +1,14 @@
 ﻿using BackEndSerrano.Servicio;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BackEndSerrano.Controllers
 {
 
     [Route("[controller]")]
     [ApiController]
+    //[Authorize]
     public class ProductoController : ControllerBase
     {
         readonly ProductoServicio _productoServicio;
@@ -26,6 +29,9 @@ namespace BackEndSerrano.Controllers
         {
             try
             {
+                var userName = User.Identity.Name;
+                var email = User.FindFirst(ClaimTypes.Email)?.Value;
+
                 var resultado= await _productoServicio.GetAllProducto();
                 if (resultado.Count() == 0)
                 {
