@@ -4,10 +4,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Sockets;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using static BackEndSerrano.Model.AutenticateModel;
+using BackEndSerrano.Model.Levantamiento;
+using System.Net.WebSockets;
 
 namespace BackEndSerrano.Servicio
 {
@@ -22,7 +26,7 @@ namespace BackEndSerrano.Servicio
         #endregion
 
         #region meodos
-        public async Task<string> GenerarToken(UserConnected usuario)
+        public Task<RefrescaToken> GenerarToken(UserConnected usuario)
         {
             var claims = new[]
             {
@@ -35,16 +39,26 @@ namespace BackEndSerrano.Servicio
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("JWT:Key").Value ?? string.Empty));
             var credenciales = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
             //.HmacSha512Signature);
-
-            var securityToken = new JwtSecurityToken(
+            var Expira = DateTime.Now.AddMinutes(int.Parse(_configuration.GetSection("JWT:ExpirationMinutes").Value ?? "600"));
+           var securityToken = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(int.Parse(_configuration.GetSection("JWT:ExpirationMinutes").Value ?? "5")),
+                expires: Expira,
                 signingCredentials: credenciales
             );
 
             string token = new JwtSecurityTokenHandler().WriteToken(securityToken);
-
-            return await Task.FromResult(token);
+            string refrescaToken=CreateRandomToken();
+            
+            var expiraSegundo = (int.Parse(_configuration.GetSection("JWT:ExpirationMinutes").Value ?? "600")) * 60;
+            return Task.FromResult(new RefrescaToken
+            {
+                IdUsuario = usuario.Id,
+                Token = token,
+                RefreshToken = refrescaToken,
+                ExpiraTime = expiraSegundo,
+             
+            });
+            
         }
 
         public async Task<string> HashPassword(string contra)
@@ -69,7 +83,10 @@ namespace BackEndSerrano.Servicio
                         "*" +
                         "from USUARIO where correo=@correo";
 
-                UserConnected usu = dapper.QuerySingleOrDefault<UserConnected>(sql, new { correo = authenticate.Correo }, commandTimeout: 100, commandType: CommandType.Text);
+                UserConnected usu = dapper.QuerySingleOrDefault<UserConnected>(sql, new 
+                { 
+                    correo = authenticate.Correo
+                }, commandTimeout: 100, commandType: CommandType.Text);
                 if (usu == null)
                 {
                     return false;
@@ -97,14 +114,15 @@ namespace BackEndSerrano.Servicio
             try
             {
                 dapper.Open();
-                string sql = "[dbo].[PI_HistoricoToken]";
+                var Expira = DateTime.Now.AddMinutes(int.Parse(_configuration.GetSection("JWT:ExpirationMinutes").Value ?? "600"));
+                string sql = "[dbo].[PIHistoricoToken]";
                 var mensaje = dapper.QuerySingle<string>(sql, new
                 {
                     IdUsuario = Id,
                     Token = Token,
                     RefrescaToken = RefreshToken,
                     FechaCreacion = DateTime.Now,
-                    FechaExpiracion = DateTime.Now.AddMinutes(2),
+                    FechaExpiracion = Expira,
                 });
 
                 return await Task.FromResult(mensaje);
@@ -117,20 +135,26 @@ namespace BackEndSerrano.Servicio
             finally { dapper.Close(); }
         }
 
-        public RefrescaToken DevolverToken(RefrescaToken refresca, int idUsuario)
+        public RefrescaToken DevolverToken(RefrescaToken refresca, string idUsuario)
         {
             try
             {
                 dapper.Open();
-                string sql = "execute [dbo].[PS_TokenExpirado]@tokenExpirado,@refrescaToken,@idUsuario";
-                var refre = dapper.Query<HistorialRefrescaToken>(sql, new { tokenExpirado = refresca.Token, refrescaToken = refresca.RefreshToke, idUsuario = idUsuario });
+                string sql = "execute [dbo].[PSTokenExpirado]@tokenExpirado,@refrescaToken,@idUsuario";
+                var refre = dapper.Query<HistorialRefrescaToken>(sql, new 
+                { 
+                    tokenExpirado = refresca.Token, 
+                    refrescaToken = refresca.RefreshToken,
+                    idUsuario = idUsuario 
+                });
+
                 if (refre is null)
                 {
                     var mensaje = new RefrescaToken
                     {
                         IdUsuario = idUsuario,
                         Token = null,
-                        RefreshToke = null,
+                        RefreshToken = null,
                         msg = "RefreshToken invalido"
                     };
                     return mensaje;
@@ -141,7 +165,7 @@ namespace BackEndSerrano.Servicio
                     {
                         IdUsuario = idUsuario,
                         Token = null,
-                        RefreshToke = null,
+                        RefreshToken = null,
                         msg = "El Token no ha Expirado"
                     };
                     return mensaje;
@@ -150,16 +174,18 @@ namespace BackEndSerrano.Servicio
                 sql = "select " +
                        "* " +
                       "from dbo.VW_UsuarioConectado where Id=@id";
-                var usuarioConectado = dapper.QuerySingleOrDefault<UserConnected>(sql, new { id = idUsuario }, commandTimeout: 100, commandType: CommandType.Text);
+                var usuarioConectado = dapper.QuerySingleOrDefault<UserConnected>(sql, new 
+                { 
+                    id = idUsuario 
+                }, commandTimeout: 100, commandType: CommandType.Text);
 
                 var token = GenerarToken(usuarioConectado);
                 var refreshToken = CreateRandomToken();
 
                 var RefreshToken = new RefrescaToken
                 {
-                    IdUsuario = idUsuario,
-                    Token = token.Result,
-                    RefreshToke = refreshToken,
+                    IdUsuario = idUsuario,                 
+                    RefreshToken = refreshToken,
                     msg = "El Token fue actualizado"
                 };
 
@@ -172,6 +198,37 @@ namespace BackEndSerrano.Servicio
             }
             finally { dapper.Close(); }
 
+        }
+
+        public string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            var ip = host.AddressList.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
+
+            return ip?.ToString() ?? "No se encontró la dirección IP.";
+        }
+
+        public  async Task<IEnumerable<InfoUsuarioModel>> ftInfoUsuario(string usuario)
+        {
+            try
+            {
+                dapper.Open();
+                string sql = "select" +
+                              "*" +
+                              "from [dbo].[ftInfoUsuario](@eUsuario)";
+                var result = dapper.Query<InfoUsuarioModel>(sql, new
+                { 
+                    eUsuario= usuario
+                });
+
+                return await Task.FromResult(result);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally { dapper.Close(); }
         }
         #endregion
     }

@@ -8,7 +8,7 @@ namespace BackEndSerrano.Controllers
 
     [Route("[controller]")]
     [ApiController]
-    //[Authorize]
+   // [Authorize]
     public class ProductoController : ControllerBase
     {
         readonly ProductoServicio _productoServicio;

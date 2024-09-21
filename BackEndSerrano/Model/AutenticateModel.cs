@@ -14,7 +14,7 @@
 
         public class UserConnected
         {
-            public int Id { get; set; }
+            public string Id { get; set; }
 
             public string Nombre { get; set; }
 
@@ -30,9 +30,10 @@
 
         public class RefrescaToken
         {
-            public int IdUsuario { get; set; }
+            public string IdUsuario { get; set; }
             public string Token { get; set; }
-            public string RefreshToke { get; set; }
+            public string RefreshToken { get; set; }
+            public dynamic ExpiraTime { get; set; }
             public string msg { get; set; }
         }
 

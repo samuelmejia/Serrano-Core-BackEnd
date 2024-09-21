@@ -25,11 +25,10 @@ namespace BackEndSerrano.Controllers
 
                 var usuario = new UserConnected
                 {
-                    Id=1,
-                    Nombre="Kevin",
-                    apellido="Mejia",
+                    Id= "APineda",
+                    Nombre="Kevin Mejia",
                     Contraseña=null,
-                    Correo="cgonzalez@test.com"
+                    Correo="kjmendoza@test.com"
                 };
 
                 //if (usuario == null)
@@ -40,17 +39,14 @@ namespace BackEndSerrano.Controllers
                 //    });
                 //}
                 var token = _hashServicio.GenerarToken(usuario);
-                var refreshToken = _hashServicio.CreateRandomToken();
+                var usuarioTiendas = _hashServicio.ftInfoUsuario(usuario.Id.ToString());
+                // var refreshToken = _hashServicio.CreateRandomToken();
+
                 //var confirmar = await _hashServicio.GuardarToken(usuario.Id, token.Result, refreshToken);
-               // if (confirmar.ToString() == "OK!")
+                // if (confirmar.ToString() == "OK!")
                 //{
 
-                    return StatusCode(StatusCodes.Status200OK, new
-                    {
-                        token = token.Result,
-                        refreshToken,
-                        usuario
-                    });
+                return StatusCode(StatusCodes.Status200OK,new { token.Result, usuarioTiendas });
                // }
 
               //  return StatusCode(StatusCodes.Status400BadRequest, new { mensaje = "No se logro generar el token" });
@@ -59,10 +55,7 @@ namespace BackEndSerrano.Controllers
             catch (Exception ex)
             {
 
-                return StatusCode(StatusCodes.Status400BadRequest, new
-                {
-                    mensaje = "ERROR:: " + ex.Message
-                });
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
             }
 
 
