@@ -10,6 +10,7 @@ namespace BackEndSerrano.Servicio
         HashServicio _hashServicio;
         public AuthServicio(IConfiguration configuration) : base(configuration)
         {
+            _hashServicio = new HashServicio(configuration);
         }
 
         public UserConnected Login(Authenticate authenticate)

@@ -1,17 +1,16 @@
 ﻿using BackEndSerrano.ConexionDB;
+using BackEndSerrano.Model.Levantamiento;
 using Dapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using static BackEndSerrano.Model.AutenticateModel;
-using BackEndSerrano.Model.Levantamiento;
-using System.Net.WebSockets;
 
 namespace BackEndSerrano.Servicio
 {

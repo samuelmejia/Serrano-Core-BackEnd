@@ -38,15 +38,15 @@ namespace BackEndSerrano.Controllers
                 //        mensaje = "No se encontro registro"
                 //    });
                 //}
-                var token = _hashServicio.GenerarToken(usuario);
-                var usuarioTiendas = _hashServicio.ftInfoUsuario(usuario.Id.ToString());
+                var token = await _hashServicio.GenerarToken(usuario);
+                var usuarioTiendas =await _hashServicio.ftInfoUsuario(usuario.Id.ToString());
                 // var refreshToken = _hashServicio.CreateRandomToken();
 
                 //var confirmar = await _hashServicio.GuardarToken(usuario.Id, token.Result, refreshToken);
                 // if (confirmar.ToString() == "OK!")
                 //{
 
-                return StatusCode(StatusCodes.Status200OK,new { token.Result, usuarioTiendas });
+                return StatusCode(StatusCodes.Status200OK,new { token, usuarioTiendas });
                // }
 
               //  return StatusCode(StatusCodes.Status400BadRequest, new { mensaje = "No se logro generar el token" });

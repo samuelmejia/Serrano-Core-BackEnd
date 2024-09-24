@@ -78,12 +78,14 @@ namespace BackEndSerrano.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("ftLevantamientoProducto")]
         public async Task<IActionResult> GetLevantamientoProducto(int id)
         {
             try
             {
-                var result = await _levantamientoServicio.ftLevantamientoProducto(id);
+                //var result = await _levantamientoServicio.ftLevantamientoProducto(id);
+                var result = await _levantamientoServicio.LevantamientoDetalle(id);
 
                 if (result is null)
                 {

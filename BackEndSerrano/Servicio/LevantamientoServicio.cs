@@ -155,7 +155,42 @@ namespace BackEndSerrano.Servicio
             finally { dapper.Close(); }
         }
 
-       
+        public async Task<IEnumerable<LevantamientoProductoModel>> LevantamientoDetalle(int id) {
+            try
+            {
+
+                dapper.Open();
+                var levantamientoProducto = new Dictionary<int, LevantamientoProductoModel>();
+                string sql = "select" +
+                               "*" +
+                              "from LevantamientoProducto lp left join LevantamientoDetalle ld on lp.ID=ld.IDLevantamientoProducto";
+                var result = dapper.Query<LevantamientoProductoModel, LevantamientoDetalleModel, LevantamientoProductoModel>(sql, (levantamiento, detalle) =>
+                {
+
+                    if (!levantamientoProducto.TryGetValue(levantamiento.ID, out var lev))
+                    {
+                        lev = levantamiento;
+                        lev.LevantamientoDetalle = new();
+                        levantamientoProducto.Add(lev.ID, lev);
+                    }
+                    if (detalle != null)
+                    {
+                        lev.LevantamientoDetalle.Add(detalle);
+                    }
+                    return lev;
+                }, splitOn: "IDLevantamientoProducto"
+
+                ).Distinct().ToList();
+
+                return await Task.FromResult(result);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally { dapper.Close(); }
+        }
         #endregion
     }
 }
