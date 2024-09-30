@@ -21,25 +21,25 @@ namespace BackEndSerrano.Controllers
         {
             try
             {
-                //var usuario = _authServicio.Login(autenticador);
+                var usuario = _authServicio.Login(autenticador);
 
-                var usuario = new UserConnected
-                {
-                    Id= "APineda",
-                    Nombre="Kevin Mejia",
-                    Contraseña=null,
-                    Correo="kjmendoza@test.com"
-                };
-
-                //if (usuario == null)
+                //var usuario = new UserConnected
                 //{
-                //    return StatusCode(StatusCodes.Status404NotFound, new
-                //    {
-                //        mensaje = "No se encontro registro"
-                //    });
-                //}
+                //    Id= "APineda",
+                //    Nombre="Ales",
+                //    Contraseña=null,
+                //    Correo="kjmendoza@test.com"
+                //};
+
+                if (usuario == null)
+                {
+                    return StatusCode(StatusCodes.Status404NotFound, new
+                    {
+                        message = "No se encontro registro"
+                    });
+                }
                 var token = await _hashServicio.GenerarToken(usuario);
-                var usuarioTiendas =await _hashServicio.ftInfoUsuario(usuario.Id.ToString());
+                var usuarioTiendas =await _hashServicio.ftInfoUsuario(usuario.Usuario.ToString());
                 // var refreshToken = _hashServicio.CreateRandomToken();
 
                 //var confirmar = await _hashServicio.GuardarToken(usuario.Id, token.Result, refreshToken);

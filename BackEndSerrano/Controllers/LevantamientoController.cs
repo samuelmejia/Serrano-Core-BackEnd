@@ -22,11 +22,11 @@ namespace BackEndSerrano.Controllers
         #endregion
 
         #region metodos
-        
+
         [HttpPost("StatusLevantamiento")]
         public async Task<IActionResult> StatusLevantamiento() {
             try
-            { 
+            {
                 var requestID = User.FindFirstValue("id");
                 var userName = User.Identity.Name;
                 var email = User.FindFirst(ClaimTypes.Email)?.Value;
@@ -49,10 +49,9 @@ namespace BackEndSerrano.Controllers
 
                 return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
             }
-        
+
         }
 
-        
         [HttpPost("CreaLevantamiento")]
         public async Task<IActionResult> CreaLevantamiento()
         {
@@ -62,14 +61,14 @@ namespace BackEndSerrano.Controllers
                 var userName = User.Identity.Name;
 
                 string ipRequest = HttpContext.Connection.RemoteIpAddress!.ToString();
-                if (ipRequest=="::1")
+                if (ipRequest == "::1")
                 {
                     ipRequest = _hashServicio.GetLocalIPAddress();
                 }
                 //var des = JsonConvert.DeserializeObject<dynamic>(Json.ToString());
                 var result = await _levantamientoServicio.AgregarLevantamiento(requestID, ipRequest);
 
-                return StatusCode(StatusCodes.Status200OK,new {message=result });
+                return StatusCode(StatusCodes.Status200OK, new { message = result });
             }
             catch (Exception ex)
             {
@@ -78,16 +77,15 @@ namespace BackEndSerrano.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpGet("ftLevantamientoProducto")]
         public async Task<IActionResult> GetLevantamientoProducto(int id)
         {
             try
             {
                 //var result = await _levantamientoServicio.ftLevantamientoProducto(id);
-                var result = await _levantamientoServicio.LevantamientoDetalle(id);
+                var result = await _levantamientoServicio.LevantamientoProductoConDetalle(id);
 
-                if (result is null)
+                if (result.Count() == 0)
                 {
                     return StatusCode(StatusCodes.Status404NotFound, new { message = "No se encontro registro" });
                 }
@@ -100,14 +98,13 @@ namespace BackEndSerrano.Controllers
             }
         }
 
-       
         [HttpPut("PULevantamiento")]
-        public async Task<IActionResult> ActualizaLevantamiento([FromBody] EncabezadoLevantamientoModel encabezado)
+        public async Task<IActionResult> PULevantamiento([FromBody] EncabezadoLevantamientoModel encabezado)
         {
             try
             {
                 var actualiza = await _levantamientoServicio.PULevantamiento(encabezado);
-                return StatusCode(StatusCodes.Status200OK, new {message=actualiza });
+                return StatusCode(StatusCodes.Status200OK, new { message = actualiza });
             }
             catch (Exception ex)
             {
@@ -116,13 +113,12 @@ namespace BackEndSerrano.Controllers
             }
         }
 
-       
         [HttpPost("PILevantamientoProducto")]
-        public async Task<IActionResult> GuardarLevantamientoProducto([FromBody] LevantamientoProductoModel progreso)
+        public async Task<IActionResult> PILevantamientoProducto([FromBody] LevantamientoProductoModel progreso)
         {
             try
             {
-                var result=await _levantamientoServicio.PILevantamientoProducto(progreso);
+                var result = await _levantamientoServicio.PILevantamientoProducto(progreso);
                 string encabezado = result.Split("|").GetValue(0).ToString();
                 string detalle = result.Split("|").GetValue(1).ToString();
                 if (encabezado == "200")
@@ -141,9 +137,8 @@ namespace BackEndSerrano.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpDelete("PDLevantamientoProducto")]
-        public async Task<IActionResult> EliminarLevantamientoProducto([FromBody] dynamic info)
+        public async Task<IActionResult> PDLevantamientoProducto([FromBody] dynamic info)
         {
             try
             {
@@ -152,7 +147,7 @@ namespace BackEndSerrano.Controllers
 
                 var result = await _levantamientoServicio.PDLevantamientoProducto(idLevantamiento, codProducto);
                 string encabezado = result.Split("|").GetValue(0).ToString();
-                string detalle= result.Split("|").GetValue(1).ToString();
+                string detalle = result.Split("|").GetValue(1).ToString();
                 if (encabezado == "200") {
                     return StatusCode(StatusCodes.Status200OK, new { message = detalle });
                 }
@@ -160,7 +155,30 @@ namespace BackEndSerrano.Controllers
                 {
                     return StatusCode(StatusCodes.Status400BadRequest, new { message = detalle });
                 }
-               
+
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+            }
+        }
+        
+        [HttpPost("PGGuardarProgreso")]
+        public async Task<IActionResult> GuadarProgreso(List<LevantamientoProductoModel> data) {
+            try
+            {
+                var result = await _levantamientoServicio.PGGuardarProgreso(data);
+                string encabezado = result.Split("|").GetValue(0).ToString();
+                string detalle = result.Split("|").GetValue(1).ToString();
+                if (encabezado == "200")
+                {
+                    return StatusCode(StatusCodes.Status200OK, new { message = detalle });
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status400BadRequest, new { message = detalle });
+                }
             }
             catch (Exception ex)
             {

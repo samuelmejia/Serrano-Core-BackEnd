@@ -2,6 +2,7 @@
 using Dapper;
 using static BackEndSerrano.Model.AutenticateModel;
 using System.Data;
+using BackEndSerrano.Model.Levantamiento;
 
 namespace BackEndSerrano.Servicio
 {
@@ -17,19 +18,22 @@ namespace BackEndSerrano.Servicio
         {
             try
             {
-                Boolean identificado = _hashServicio.VerificarPass(authenticate);
+                //Boolean identificado = _hashServicio.VerificarPass(authenticate);
 
-                if (identificado)
-                {
+                //if (identificado)
+              //  {
                     dapper.Open();
                     string sql = "select " +
                                  "* " +
-                                 "from dbo.VW_UsuarioConectado where correo=@correo";
+                                 "from [dbo].[ftInfoUsuario](@eUsuario)";
 
-                    return dapper.QuerySingleOrDefault<UserConnected>(sql, new { correo = authenticate.Correo }, commandTimeout: 100, commandType: CommandType.Text);
-                }
+                    var result =dapper.QueryFirstOrDefault<UserConnected>(sql, new { eUsuario = authenticate.Usuario }, commandTimeout: 100, commandType: CommandType.Text);
+                  
+                
+                return result;
+                //}
 
-                return null;
+                //return null;
             }
             catch (Exception)
             {

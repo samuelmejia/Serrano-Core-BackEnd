@@ -4,11 +4,9 @@
     {
         public class Authenticate
         {
-            public string Correo { get; set; } = null!;
+            public string Usuario { get; set; } = null!;
 
             public string Password { get; set; } = null!;
-
-            public string key { get; set; }
 
         }
 
@@ -18,7 +16,7 @@
 
             public string Nombre { get; set; }
 
-            public string apellido { get; set; }
+            public string Usuario { get; set; }
 
             public string Correo { get; set; } = null!;
 
@@ -31,6 +29,7 @@
         public class RefrescaToken
         {
             public string IdUsuario { get; set; }
+            public string Nombre { get; set; }
             public string Token { get; set; }
             public string RefreshToken { get; set; }
             public dynamic ExpiraTime { get; set; }

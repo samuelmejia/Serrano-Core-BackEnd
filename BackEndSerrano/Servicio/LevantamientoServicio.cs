@@ -155,7 +155,7 @@ namespace BackEndSerrano.Servicio
             finally { dapper.Close(); }
         }
 
-        public async Task<IEnumerable<LevantamientoProductoModel>> LevantamientoDetalle(int id) {
+        public async Task<IEnumerable<LevantamientoProductoModel>> LevantamientoProductoConDetalle(int id) {
             try
             {
 
@@ -163,7 +163,7 @@ namespace BackEndSerrano.Servicio
                 var levantamientoProducto = new Dictionary<int, LevantamientoProductoModel>();
                 string sql = "select" +
                                "*" +
-                              "from LevantamientoProducto lp left join LevantamientoDetalle ld on lp.ID=ld.IDLevantamientoProducto";
+                              "from [dbo].[ftLevantamientoProducto](@id)";
                 var result = dapper.Query<LevantamientoProductoModel, LevantamientoDetalleModel, LevantamientoProductoModel>(sql, (levantamiento, detalle) =>
                 {
 
@@ -178,7 +178,7 @@ namespace BackEndSerrano.Servicio
                         lev.LevantamientoDetalle.Add(detalle);
                     }
                     return lev;
-                }, splitOn: "IDLevantamientoProducto"
+                }, new {id=id },splitOn: "IDLevantamientoProducto"
 
                 ).Distinct().ToList();
 
@@ -190,6 +190,45 @@ namespace BackEndSerrano.Servicio
                 throw;
             }
             finally { dapper.Close(); }
+        }
+
+        public async Task<string> PGGuardarProgreso(List<LevantamientoProductoModel> data)
+        {
+            try
+            {
+                dapper.Open();
+                var mensaje = "";
+                int iterador;
+                string sql = "[dbo].[PGGuardarProgreso]";
+                foreach (var producto in data)
+                {
+                    iterador = 0;
+                    foreach (var detalle in producto.LevantamientoDetalle)
+                    {
+
+                         mensaje = dapper.QuerySingle<string>(sql, new
+                        {
+                            eIDLevantamiento = producto.IDLevantamiento,
+                            eCODProducto = producto.CODProducto,
+                            eObservaciones = producto.Observaciones,
+                            eIDTiendas = detalle.IDTiendas,
+                            eDisponible = detalle.Disponible,
+                            eEncontrado = detalle.Encontrado,
+                            eIDEstado = detalle.IDEstado,
+                            eIterador = iterador,
+                        });
+                        iterador++; 
+                    }
+                };
+                return await Task.FromResult(mensaje);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally { dapper.Close(); }
+
         }
         #endregion
     }

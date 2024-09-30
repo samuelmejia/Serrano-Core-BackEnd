@@ -33,7 +33,7 @@ builder.Services.AddCors(options =>
     {
         builder
             .AllowAnyOrigin()
-            //.WithOrigins("http://localhost:3000", "http://10.107.10.4:8081")
+            //.WithOrigins("http://localhost:3000", "http://10.107.10.4:8081", "http://localhost:8081")
             .AllowAnyMethod() // Permitir cualquier método (GET, POST, etc.)
             .AllowAnyHeader(); // Permitir cualquier encabezado
     });

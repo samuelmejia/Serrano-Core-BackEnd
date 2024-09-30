@@ -29,9 +29,9 @@ namespace BackEndSerrano.Servicio
         {
             var claims = new[]
             {
-                new Claim("id", usuario.Id.ToString()),
-                new Claim(ClaimTypes.Name, usuario.Nombre!),
-                new Claim(ClaimTypes.Email, usuario.Correo!),
+                new Claim("id", usuario.Usuario.ToString()),
+                new Claim(ClaimTypes.Name, usuario.Nombre),
+                //new Claim(ClaimTypes.Email, usuario.Correo!),
                 new Claim(ClaimTypes.AuthenticationInstant, DateTimeOffset.Now.ToString())
             };
 
@@ -51,7 +51,8 @@ namespace BackEndSerrano.Servicio
             var expiraSegundo = (int.Parse(_configuration.GetSection("JWT:ExpirationMinutes").Value ?? "600")) * 60;
             return Task.FromResult(new RefrescaToken
             {
-                IdUsuario = usuario.Id,
+                IdUsuario = usuario.Usuario,
+                Nombre =usuario.Nombre,
                 Token = token,
                 RefreshToken = refrescaToken,
                 ExpiraTime = expiraSegundo,
@@ -84,7 +85,7 @@ namespace BackEndSerrano.Servicio
 
                 UserConnected usu = dapper.QuerySingleOrDefault<UserConnected>(sql, new 
                 { 
-                    correo = authenticate.Correo
+                    correo = authenticate.Usuario
                 }, commandTimeout: 100, commandType: CommandType.Text);
                 if (usu == null)
                 {
