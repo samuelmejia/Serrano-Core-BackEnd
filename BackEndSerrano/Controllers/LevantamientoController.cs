@@ -32,7 +32,6 @@ namespace BackEndSerrano.Controllers
                 var email = User.FindFirst(ClaimTypes.Email)?.Value;
 
                 var ipRequest = HttpContext.Connection.RemoteIpAddress!.ToString();
-                //var hola = IpAddress.GetProperty("IpAddress").GetString();
                 if (ipRequest == "::1")
                 {
                     ipRequest = _hashServicio.GetLocalIPAddress();
@@ -50,6 +49,25 @@ namespace BackEndSerrano.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
             }
 
+        }
+
+        [HttpGet("ListaLevantamientos")]
+        public async Task<IActionResult> ListaLevantamientos(int id)
+        {
+            try
+            {
+                var encabezado = await _levantamientoServicio.ListaLevantamientos(id);
+                if (encabezado is null)
+                {
+                    return StatusCode(StatusCodes.Status404NotFound, new { message = "No se encontro registro!" });
+                }
+                return StatusCode(StatusCodes.Status200OK, encabezado);
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+            }
         }
 
         [HttpPost("CreaLevantamiento")]
@@ -82,7 +100,6 @@ namespace BackEndSerrano.Controllers
         {
             try
             {
-                //var result = await _levantamientoServicio.ftLevantamientoProducto(id);
                 var result = await _levantamientoServicio.LevantamientoProductoConDetalle(id);
 
                 if (result.Count() == 0)

@@ -20,13 +20,49 @@ namespace BackEndSerrano.Servicio
             try
             {
                 dapper.Open();
-                var sql = "select" +
-                            "*" +
-                            "from [dbo].[ftLevantamiento](@usuario)";
+                var sql = "select top 1 ID" +
+                    ",FechaCreacion" +
+                    ",FechaCierre" +
+                    ",UsuarioResponsable" +
+                    ",IPAddress" +
+                    ",Area" +
+                    ",Pasillo" +
+                    ",Observaciones" +
+                    ",Estado" +
+                    " from [dbo].[ftLevantamiento](@usuario) where IDEstado in (1,2)";
 
                 return await Task.FromResult(dapper.QuerySingleOrDefault<EncabezadoLevantamientoModel>(sql, new 
                 {
                     usuario=usuario
+                }));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+            finally { dapper.Close();}
+        }
+
+        public async Task<IEnumerable<EncabezadoLevantamientoModel>> ListaLevantamientos(int id)
+        {
+            try
+            {
+                dapper.Open();
+                var sql = "select ID" +
+                    ",FechaCreacion" +
+                    ",FechaCierre" +
+                    ",UsuarioResponsable" +
+                    ",IPAddress" +
+                    ",Area" +
+                    ",Pasillo" +
+                    ",Observaciones" +
+                    ",Estado" +
+                    " from [dbo].[ftLevantamiento](@id)";
+
+                return await Task.FromResult(dapper.Query<EncabezadoLevantamientoModel>(sql, new
+                {
+                    id = id
                 }));
             }
             catch (Exception)
@@ -34,7 +70,7 @@ namespace BackEndSerrano.Servicio
 
                 throw;
             }
-            finally { dapper.Close();}
+            finally { dapper.Close(); }
         }
 
         public async Task<IEnumerable<LevantamientoProductoModel>> ftLevantamientoProducto(int id)
@@ -91,7 +127,6 @@ namespace BackEndSerrano.Servicio
                 var result = dapper.QuerySingle<string>(sql, new
                 { 
                     ID              =   encabezado.ID,
-                    FechaCierre     =   DateTime.Parse(encabezado.FechaCierre.GetString()),
                     Area            =   encabezado.Area,
                     Pasillo         =   encabezado.Pasillo,
                     Observaciones   =   encabezado.Observaciones,
