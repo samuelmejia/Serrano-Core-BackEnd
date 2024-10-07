@@ -9,19 +9,30 @@ namespace BackEndSerrano.Controllers
     [Route("[controller]")]
     [ApiController]
     [Authorize]
-    public class LevantamientoController : ControllerBase
+    public class LevantamientoController(IConfiguration configuration) : ControllerBase
     {
-        readonly LevantamientoServicio _levantamientoServicio;
-        readonly HashServicio _hashServicio;
-        #region ctor
-        public LevantamientoController(IConfiguration configuration)
-        {
-            _levantamientoServicio = new(configuration);
-            _hashServicio = new(configuration);
-        }
-        #endregion
+        readonly LevantamientoServicio _levantamientoServicio = new(configuration);
+        readonly HashServicio _hashServicio = new(configuration);
 
         #region metodos
+
+        [HttpPost("ftEstados")]
+        public async Task<IActionResult> EstadosLevantamiento([FromBody] EstadoLevantamientoModel estado)
+        {
+            try
+            {
+                var result = await _levantamientoServicio.ftEstados(estado);
+                if (result is null) {
+                    return StatusCode(StatusCodes.Status400BadRequest, new { message = "No se encontro registro" });
+                }
+                return StatusCode(StatusCodes.Status200OK, result);
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(StatusCodes.Status400BadRequest, ex);
+            }        
+        }
 
         [HttpPost("StatusLevantamiento")]
         public async Task<IActionResult> StatusLevantamiento() {
@@ -102,7 +113,7 @@ namespace BackEndSerrano.Controllers
             {
                 var result = await _levantamientoServicio.LevantamientoProductoConDetalle(id);
 
-                if (result.Count() == 0)
+                if (!result.Any())
                 {
                     return StatusCode(StatusCodes.Status404NotFound, new { message = "No se encontro registro" });
                 }

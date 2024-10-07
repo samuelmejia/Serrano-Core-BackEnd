@@ -27,6 +27,8 @@ namespace BackEndSerrano.Servicio
         #region meodos
         public Task<RefrescaToken> GenerarToken(UserConnected usuario)
         {
+            try
+            {         
             var claims = new[]
             {
                 new Claim("id", usuario.Usuario.ToString()),
@@ -44,21 +46,35 @@ namespace BackEndSerrano.Servicio
                 expires: Expira,
                 signingCredentials: credenciales
             );
-
-            string token = new JwtSecurityTokenHandler().WriteToken(securityToken);
-            string refrescaToken=CreateRandomToken();
             
             var expiraSegundo = (int.Parse(_configuration.GetSection("JWT:ExpirationMinutes").Value ?? "600")) * 60;
-            return Task.FromResult(new RefrescaToken
+            string token = new JwtSecurityTokenHandler().WriteToken(securityToken);
+            string refrescaToken=CreateRandomToken();
+            var confirmar = GuardarToken(usuario.Usuario, token, refrescaToken);
+                if (confirmar.ToString() == "OK!")
+                {
+                    return Task.FromResult(new RefrescaToken
+                    {
+                        IdUsuario = usuario.Usuario,
+                        Nombre = usuario.Nombre,
+                        Token = token,
+                        RefreshToken = refrescaToken,
+                        ExpiraTime = expiraSegundo,
+
+                    });
+            }
+                else
             {
-                IdUsuario = usuario.Usuario,
-                Nombre =usuario.Nombre,
-                Token = token,
-                RefreshToken = refrescaToken,
-                ExpiraTime = expiraSegundo,
-             
-            });
-            
+                return null;
+            }
+
+        }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
         }
 
         public async Task<string> HashPassword(string contra)
@@ -67,6 +83,28 @@ namespace BackEndSerrano.Servicio
             string hasherdPassword = passwordHasher.HashPassword(new IdentityUser(), contra);
 
             return await Task.FromResult(hasherdPassword);
+        }
+
+        public string HashMD5(string texto)
+        {
+            try
+            {
+                using (MD5 md5 = MD5.Create())
+                {
+                    byte[] bytes = md5.ComputeHash(Encoding.UTF8.GetBytes(texto));
+                    StringBuilder builder = new StringBuilder();
+                    foreach (byte b in bytes)
+                    {
+                        builder.Append(b.ToString("x2"));
+                    }
+                    return builder.ToString();
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public string CreateRandomToken()
@@ -79,37 +117,35 @@ namespace BackEndSerrano.Servicio
             try
             {
                 dapper.Open();
-                string sql = "select" +
-                        "*" +
-                        "from USUARIO where correo=@correo";
+               var fPassword=authenticate.Password;
 
-                UserConnected usu = dapper.QuerySingleOrDefault<UserConnected>(sql, new 
-                { 
-                    correo = authenticate.Usuario
-                }, commandTimeout: 100, commandType: CommandType.Text);
-                if (usu == null)
+                string sql = "select " +
+                             " Password " +
+                             "from [dbo].[ftInfoUsuario](@eUsuario)";
+
+                var result = dapper.QueryFirstOrDefault<string>(sql, new { eUsuario = authenticate.Usuario }, commandTimeout: 100, commandType: CommandType.Text);
+                var bPassword = HashMD5(result);
+                if (result is null || fPassword != bPassword)
                 {
                     return false;
                 }
-                var passwordHasher = new PasswordHasher<IdentityUser>();
-                var result = passwordHasher.VerifyHashedPassword(new IdentityUser(), usu.Contraseña, authenticate.Password);
-                if (result == PasswordVerificationResult.Success || result == PasswordVerificationResult.SuccessRehashNeeded)
+                else
                 {
                     return true;
-
                 }
 
-                return false;
+
             }
             catch (Exception)
             {
 
                 throw;
             }
+            finally { dapper.Close(); }
 
         }
 
-        public async Task<string> GuardarToken(int Id, string Token, string RefreshToken)
+        public string GuardarToken(string Id, string Token, string RefreshToken)
         {
             try
             {
@@ -125,9 +161,9 @@ namespace BackEndSerrano.Servicio
                     FechaExpiracion = Expira,
                 });
 
-                return await Task.FromResult(mensaje);
+                return mensaje;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 throw;

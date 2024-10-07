@@ -23,33 +23,24 @@ namespace BackEndSerrano.Controllers
             {
                 var usuario = _authServicio.Login(autenticador);
 
-                //var usuario = new UserConnected
-                //{
-                //    Id= "APineda",
-                //    Nombre="Ales",
-                //    Contraseña=null,
-                //    Correo="kjmendoza@test.com"
-                //};
-
                 if (usuario == null)
                 {
                     return StatusCode(StatusCodes.Status404NotFound, new
                     {
-                        message = "No se encontro registro"
+                        message = "Credenciales incorrectas"
                     });
                 }
                 var token = await _hashServicio.GenerarToken(usuario);
                 var usuarioTiendas =await _hashServicio.ftInfoUsuario(usuario.Usuario.ToString());
-                // var refreshToken = _hashServicio.CreateRandomToken();
 
-                //var confirmar = await _hashServicio.GuardarToken(usuario.Id, token.Result, refreshToken);
-                // if (confirmar.ToString() == "OK!")
-                //{
 
+                if (token == null) 
+                {
+                    return StatusCode(StatusCodes.Status400BadRequest, new { message = "Error al generar token, contactar al depto. IT" });
+                }
+              
                 return StatusCode(StatusCodes.Status200OK,new { token, usuarioTiendas });
-               // }
-
-              //  return StatusCode(StatusCodes.Status400BadRequest, new { mensaje = "No se logro generar el token" });
+              
 
             }
             catch (Exception ex)

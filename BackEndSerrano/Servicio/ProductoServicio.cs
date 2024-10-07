@@ -41,7 +41,7 @@ namespace BackEndSerrano.Servicio
                 var sql = "[dbo].[PGProductos] @busqueda";
                 return await Task.FromResult(dapper.Query<ProductosModel>(sql, new {busqueda=busqueda }));
             }
-            catch (Exception ex)  
+            catch (Exception)  
             {
                  
                 throw;
@@ -57,7 +57,7 @@ namespace BackEndSerrano.Servicio
                 var sql = "[dbo].[PSExistenciaProducto] @busqueda";
                 return await Task.FromResult(dapper.Query<ProductoExistenciaModel>(sql, new { busqueda = busqueda }));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 throw;

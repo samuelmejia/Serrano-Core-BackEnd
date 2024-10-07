@@ -16,6 +16,30 @@ namespace BackEndSerrano.Servicio
         #endregion
 
         #region metodos
+
+        public async Task<IEnumerable<EstadoLevantamientoModel>> ftEstados(EstadoLevantamientoModel estado)
+        {
+            try
+            {
+                dapper.Open();
+                var sql = "select" +
+                    "*" +
+                    "from ftEstados(@eIDEtapa,@eProceso)";
+                var result = dapper.Query<EstadoLevantamientoModel>(sql, new 
+                {
+                    eIDEtapa=estado.IDEtapa,
+                    eProceso=estado.Proceso
+                });
+
+                return  await Task.FromResult(result);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally { dapper.Close(); }
+        }
         public  async Task<EncabezadoLevantamientoModel> Encabezado( string usuario) {
             try
             {

@@ -1,8 +1,7 @@
 ﻿using BackEndSerrano.ConexionDB;
 using Dapper;
-using static BackEndSerrano.Model.AutenticateModel;
 using System.Data;
-using BackEndSerrano.Model.Levantamiento;
+using static BackEndSerrano.Model.AutenticateModel;
 
 namespace BackEndSerrano.Servicio
 {
@@ -18,10 +17,10 @@ namespace BackEndSerrano.Servicio
         {
             try
             {
-                //Boolean identificado = _hashServicio.VerificarPass(authenticate);
+                Boolean identificado = _hashServicio.VerificarPass(authenticate);
 
-                //if (identificado)
-              //  {
+                if (identificado)
+                {
                     dapper.Open();
                     string sql = "select " +
                                  "* " +
@@ -31,9 +30,9 @@ namespace BackEndSerrano.Servicio
                   
                 
                 return result;
-                //}
+                }
 
-                //return null;
+                return null;
             }
             catch (Exception)
             {
