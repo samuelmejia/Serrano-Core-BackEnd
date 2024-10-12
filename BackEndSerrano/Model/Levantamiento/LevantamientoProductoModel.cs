@@ -10,6 +10,7 @@
         public string Descripcion { get; set; }
         public dynamic FechaHora { get; set; }
         public string Observaciones { get; set; }
+        public string CodigoBarra { get; set; }
         public List<LevantamientoDetalleModel> LevantamientoDetalle { get; set; }
     
        

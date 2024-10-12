@@ -64,6 +64,53 @@ namespace BackEndSerrano.Servicio
             }
         }
 
+        public async Task<IEnumerable<ProveedoresModel>> GetProveedores()
+        {
+            try
+            {
+                dapper.Open();
+                string sql = "select" +
+                    "*" +
+                    "from dbo.VProveedores";
+                var result = dapper.Query<ProveedoresModel>(sql);
+
+                return await Task.FromResult(result);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally { dapper.Close(); }
+        }
+
+        public async Task<IEnumerable<ProveedorMarcaModel>> GetProveedorMarca(string IDProveedor)
+        {
+            try
+            {
+                dapper.Open();
+                string sql = "select" +
+                    "*" +
+                    "from VProveedorMarca where IDProveedor=@IDProveedor";
+                var result = dapper.Query<ProveedorMarcaModel>(sql, new { IDProveedor= IDProveedor });
+
+                return await Task.FromResult(result);
+;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally
+            {
+
+                dapper.Close();
+            }
+        }
+
+
+
         #endregion
     }
 }

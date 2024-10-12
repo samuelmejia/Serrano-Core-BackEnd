@@ -2,14 +2,16 @@
 using BackEndSerrano.Servicio;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace BackEndSerrano.Controllers
 {
     [Route("[controller]")]
     [ApiController]
     [Authorize]
-    //[AllowAnonymous]
+   // [AllowAnonymous]
     public class PedidosController(IConfiguration configuration) : ControllerBase
     {
         readonly PedidosServicio _pedidosServicio = new(configuration);
@@ -95,13 +97,24 @@ namespace BackEndSerrano.Controllers
 
                 int idPedido = json.GetProperty("idPedido").GetInt32();
                 string descripcion = json.GetProperty("descripcion").GetString();
-                DateTime fechaEntrega = json.GetProperty("fechaEntrega").GetDateTime();
+                DateTime fechaEntrega= new DateTime(1753, 1, 1);
+                if (json.TryGetProperty("fechaEntrega", out JsonElement fechaEntregaElement))
+                {
+                  
+                    if (fechaEntregaElement.ValueKind == JsonValueKind.Null ||
+                        (fechaEntregaElement.ValueKind == JsonValueKind.String && fechaEntregaElement.GetString().Trim().Length>0))
+                    {
+                        fechaEntrega = json.GetProperty("fechaEntrega").GetDateTime();
+                    }
+                }
                 var requestID = User.FindFirstValue("id");
                 var ipRequest = HttpContext.Connection.RemoteIpAddress!.ToString();
                 if (ipRequest == "::1")
                 {
                     ipRequest = _hashServicio.GetLocalIPAddress();
                 }
+
+
 
                 var result = await _pedidosServicio.PostPedidoG(idPedido, descripcion, fechaEntrega, requestID, ipRequest);
                 string encabezado = result.Split("|").GetValue(0).ToString();

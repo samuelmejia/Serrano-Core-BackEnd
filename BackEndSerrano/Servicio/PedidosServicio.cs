@@ -2,6 +2,7 @@
 using BackEndSerrano.Model.Pedido;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 
 namespace BackEndSerrano.Servicio
@@ -121,7 +122,20 @@ namespace BackEndSerrano.Servicio
         {
             try
             {
-              
+               
+                
+                DateTime fechaEntrega = new DateTime(1753, 1, 1);
+
+                if (pedidoProducto.FechaEntregaProducto is null)
+                {
+                    fechaEntrega = new DateTime(1753, 1, 1);
+                }
+                else if (!string.IsNullOrEmpty(pedidoProducto.FechaEntregaProducto.GetString()) && pedidoProducto.FechaEntregaProducto.GetString().Trim().Length > 0)
+                {
+                    fechaEntrega = Convert.ToDateTime(pedidoProducto.FechaEntregaProducto.GetString());
+                }
+
+
                 dapper.Open();
                 string sql = "[dbo].[PGGuardarPedidoProducto]";
                 var result = dapper.QuerySingle<string>(sql, new
@@ -129,7 +143,7 @@ namespace BackEndSerrano.Servicio
                     eCodProducto            =pedidoProducto.CodProducto,
                     eDescripcionProducto    =pedidoProducto.DescripcionProducto,
                     eMarca                  =pedidoProducto.Marca,
-                    eFechaEntrega           =Convert.ToDateTime(pedidoProducto.FechaEntregaProducto.GetString()),
+                    eFechaEntrega           = fechaEntrega,
                     eCantidad               =pedidoProducto.Cantidad,
                     eObservaciones          =pedidoProducto.ObservacionesProducto,
                     eIDPedido               =pedidoProducto.IDPedido
@@ -170,13 +184,23 @@ namespace BackEndSerrano.Servicio
         {
             try
             {
+                DateTime fechaEntrega = new DateTime(1753, 1, 1);
+                if (pedido.FechaEntrega is null)
+                {
+                    fechaEntrega = new DateTime(1753, 1, 1);
+                }           
+                else if(!string.IsNullOrEmpty(pedido.FechaEntrega.GetString()) && pedido.FechaEntrega.GetString().Trim().Length>0)
+                {
+                    fechaEntrega = Convert.ToDateTime(pedido.FechaEntrega.GetString());
+                }
+
                 dapper.Open();
                 string sql = "[dbo].[PUPedido]";
                 var result = dapper.QuerySingle<string>(sql, new 
                 {
                     eID             =pedido.ID,
                     eObservaciones  = pedido.Observaciones,
-                    eFechaEntrega   =Convert.ToDateTime(pedido.FechaEntrega.GetString()),
+                    eFechaEntrega   = fechaEntrega,
                     eIDEstado       =pedido.Estado.GetInt32(),
                 });
 

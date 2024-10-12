@@ -12,6 +12,7 @@
         public dynamic FechaUltimaCompra { get; set; }
         public dynamic FechaUltimaVenta { get; set; }
         public string Estado { get; set; }
+        public string CodigoBarra { get; set; }
 
     }
 }
