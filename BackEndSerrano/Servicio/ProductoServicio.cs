@@ -1,6 +1,7 @@
 ﻿using BackEndSerrano.ConexionDB;
 using BackEndSerrano.Model.Producto;
 using Dapper;
+using System.Data;
 
 namespace BackEndSerrano.Servicio
 {
@@ -110,6 +111,80 @@ namespace BackEndSerrano.Servicio
         }
 
 
+        public async Task<IEnumerable<ProductosModel>> PSCargaInfo(ProductosProMarModel model)
+        {
+            try
+            {
+                model.IDProveedor ??= "";
+                model.IDMarca ??= "";
+                model.Modelo ??= "";
+
+                dapper.Open();
+                string sql = "[dbo].[PSCargarInfo]";
+                var result = dapper.Query<ProductosModel>(sql, new {
+                    eIDProveedor = model.IDProveedor,
+                    eIDMarca =model.IDMarca ,
+                    eModelo = model.Modelo
+                }, commandType: CommandType.StoredProcedure);
+
+                return await Task.FromResult(result);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally {
+                dapper.Close();
+            }
+        }
+
+        public async Task<KardexModel> GetKardexEncabezado(string CodProducto)
+        {
+            try
+            {
+                dapper.Open();
+                string sql = "[dbo].[PSEncabezadoKardex]";
+                var result = dapper.QuerySingle<KardexModel>(sql, new
+                {
+                    eCodProducto = CodProducto
+                }, commandType: CommandType.StoredProcedure);
+
+                return await Task.FromResult(result);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally {
+                dapper.Close();
+            }
+        }
+
+        public async Task<IEnumerable<DetalleKardex>> GetKardexDetalle(string CodProducto)
+        {
+            try
+            {
+                dapper.Open();
+                string sql = "[dbo].[PSDetalleKardex]";
+                var result = dapper.Query<DetalleKardex>(sql, new
+                {
+                    eCodProducto = CodProducto
+                }, commandType: CommandType.StoredProcedure);
+
+                return await Task.FromResult(result);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally
+            {
+                dapper.Close();
+            }
+        }
 
         #endregion
     }

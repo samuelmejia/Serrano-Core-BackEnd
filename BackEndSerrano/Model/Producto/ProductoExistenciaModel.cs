@@ -12,5 +12,8 @@
         public decimal Disponible { get; set; }
         public decimal PrdStockMinimo { get; set; }
         public decimal PrdStockMaximo { get;set; }
+        public decimal PrdCosto { get; set; }
+
+        public decimal PrdPreUni { get; set; }
     }
 }

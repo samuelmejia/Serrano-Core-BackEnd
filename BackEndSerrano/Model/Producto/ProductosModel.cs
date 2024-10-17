@@ -13,6 +13,13 @@
         public dynamic FechaUltimaVenta { get; set; }
         public string Estado { get; set; }
         public string CodigoBarra { get; set; }
+        
 
+    }
+
+    public class ProductosProMarModel { 
+        public string IDProveedor { get; set; }
+        public string IDMarca { get; set; }
+        public string Modelo { get; set; }
     }
 }

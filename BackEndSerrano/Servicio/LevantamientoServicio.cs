@@ -1,7 +1,6 @@
 ﻿using BackEndSerrano.ConexionDB;
 using BackEndSerrano.Model.Levantamiento;
 using Dapper;
-using Microsoft.AspNetCore.Mvc;
 
 namespace BackEndSerrano.Servicio
 {
